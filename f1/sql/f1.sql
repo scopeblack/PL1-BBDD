@@ -1,6 +1,5 @@
 \pset pager off
 
--- Crear el esquema solo una vez
 CREATE SCHEMA IF NOT EXISTS ddbb;
 
 BEGIN;
@@ -131,75 +130,266 @@ CREATE TABLE IF NOT EXISTS ddbb.status(
 );
 
 \echo 'Cargando datos'
-\COPY ddbb.circuits    FROM f1/datos/circuits.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL 'NULL', ENCODING 'UTF-8');
-\COPY ddbb.constructors FROM f1/datos/constructors.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL 'NULL', ENCODING 'UTF-8');
-\COPY ddbb.drivers     FROM f1/datos/drivers.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL 'NULL', ENCODING 'UTF-8');
-\COPY ddbb.lap_times   FROM f1/datos/lap_times.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL 'NULL', ENCODING 'UTF-8');
-\COPY ddbb.pit_stops   FROM f1/datos/pit_stops.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL 'NULL', ENCODING 'UTF-8');
-\COPY ddbb.qualifying  FROM f1/datos/qualifying.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL 'NULL', ENCODING 'UTF-8');
-\COPY ddbb.races       FROM f1/datos/races.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL 'NULL', ENCODING 'UTF-8');
-\COPY ddbb.results     FROM f1/datos/results.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL 'NULL', ENCODING 'UTF-8');
-\COPY ddbb.seasons     FROM f1/datos/seasons.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL 'NULL', ENCODING 'UTF-8');
-\COPY ddbb.status      FROM f1/datos/status.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL 'NULL', ENCODING 'UTF-8');
+\COPY ddbb.circuits    FROM f1/datos/circuits.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL '\N', ENCODING 'UTF-8');
+\COPY ddbb.constructors FROM f1/datos/constructors.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL '\N', ENCODING 'UTF-8');
+\COPY ddbb.drivers     FROM f1/datos/drivers.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL '\N', ENCODING 'UTF-8');
+\COPY ddbb.lap_times   FROM f1/datos/lap_times.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL '\N', ENCODING 'UTF-8');
+\COPY ddbb.pit_stops   FROM f1/datos/pit_stops.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL '\N', ENCODING 'UTF-8');
+\COPY ddbb.qualifying  FROM f1/datos/qualifying.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL '\N', ENCODING 'UTF-8');
+\COPY ddbb.races       FROM f1/datos/races.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL '\N', ENCODING 'UTF-8');
+\COPY ddbb.results     FROM f1/datos/results.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL '\N', ENCODING 'UTF-8');
+\COPY ddbb.seasons     FROM f1/datos/seasons.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL '\N', ENCODING 'UTF-8');
+\COPY ddbb.status      FROM f1/datos/status.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL '\N', ENCODING 'UTF-8');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE SCHEMA IF NOT EXISTS pl1final;
+
+\echo 'creando la tabla circuits'
+CREATE TABLE IF NOT EXISTS pl1final.circuits(
+    circuit_id      INTEGER NOT NULL,
+    circuit_ref     TEXT,
+    name            TEXT NOT NULL,
+    location        TEXT,
+    country         TEXT,
+    lat             REAL,
+    lng             REAL,
+    alt             INTEGER,
+    url             TEXT
+);
+
+\echo 'creando la tabla constructors'
+CREATE TABLE IF NOT EXISTS pl1final.constructors(
+    constructor_id   INTEGER NOT NULL,
+    constructor_ref  TEXT,
+    name             TEXT NOT NULL,
+    nationality      TEXT,
+    url              TEXT
+);
+
+\echo 'creando la tabla drivers'
+CREATE TABLE IF NOT EXISTS pl1final.drivers(
+    driverId        INTEGER NOT NULL,
+    driverRef       TEXT,
+    number          INTEGER,
+    code            TEXT,
+    forename        TEXT,
+    surname         TEXT,
+    dob             TEXT,
+    nationality     TEXT,
+    url             TEXT
+    CONSTRAINT piloto_pk PRIMARY KEY (pilotoRef)
+);
+
+\echo 'creando la tabla lap_times'
+CREATE TABLE IF NOT EXISTS pl1final.lap_times(
+    raceId          INTEGER NOT NULL,
+    driverId        INTEGER,
+    lap             INTEGER,
+    position        INTEGER,
+    time            TEXT,
+    milliseconds    INTEGER
+);
+
+\echo 'creando la tabla pit_stops'
+CREATE TABLE IF NOT EXISTS pl1final.pit_stops(
+    raceId          INTEGER NOT NULL,
+    driverId        INTEGER,
+    stop            INTEGER,
+    lap             INTEGER,
+    time            TEXT,
+    duration        TEXT,
+    milliseconds    INTEGER
+);
+
+\echo 'creando la tabla qualifying'
+CREATE TABLE IF NOT EXISTS pl1final.qualifying(
+    qualifyId       INTEGER NOT NULL,
+    raceId          INTEGER,
+    driverId        INTEGER,
+    constructorId   INTEGER,
+    number          INTEGER,
+    position        INTEGER,
+    q1              TEXT,
+    q2              TEXT,
+    q3              TEXT
+);
+
+\echo 'creando la tabla races'
+CREATE TABLE IF NOT EXISTS pl1final.races(
+    raceId          INTEGER NOT NULL,
+    year            INTEGER,
+    round           INTEGER,
+    circuitId       INTEGER,
+    name            TEXT,
+    date            TEXT,
+    time            TEXT,
+    url             TEXT,
+    fp1_date        TEXT,
+    fp1_time        TEXT,
+    fp2_date        TEXT,
+    fp2_time        TEXT,
+    fp3_date        TEXT,
+    fp3_time        TEXT,
+    quali_date      TEXT,
+    quali_time      TEXT,
+    sprint_date     TEXT,
+    sprint_time     TEXT
+);
+
+\echo 'creando la tabla results'
+CREATE TABLE IF NOT EXISTS pl1final.results(
+    results_id              INTEGER NOT NULL,
+    gpid                    INTEGER,
+    driver_id               INTEGER,
+    team_id                 INTEGER,
+    number                  INTEGER,
+    grid_position           INTEGER,
+    position                INTEGER,      
+    position_text           TEXT,          
+    position_order          INTEGER,
+    points                  REAL,
+    laps                    INTEGER,
+    time                    TEXT,            
+    time_milliseconds       INTEGER,
+    fastest_lap             INTEGER,
+    championship_rank       INTEGER,
+    fastest_lap_time        TEXT,            
+    fastest_lap_speed       REAL,           
+    status_id               INTEGER
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \echo "Mostrar cuantas circuits hay" 
 SELECT count(*) as Número_de_circuits FROM ddbb.circuits;
 
-\echo "Mostrar las circuits en país específico" 
-SELECT * FROM ddbb.circuits WHERE country='Spain';
+-- \echo "Mostrar las circuits en país específico" 
+-- SELECT * FROM ddbb.circuits WHERE country='Spain';
 
-\echo "Mostrar cuantas constructors hay" 
-SELECT count(*) as Número_de_constructors FROM ddbb.constructors;
+-- \echo "Mostrar cuantas constructors hay" 
+-- SELECT count(*) as Número_de_constructors FROM ddbb.constructors;
 
-\echo "Mostrar las constructors en país específico" 
-SELECT * FROM ddbb.constructors WHERE nationality='Spanish';
+-- \echo "Mostrar las constructors en país específico" 
+-- SELECT * FROM ddbb.constructors WHERE nationality='Spanish';
 
-\echo "Mostrar cuantas drivers hay" 
-SELECT count(*) as Número_de_drivers FROM ddbb.drivers;
+-- \echo "Mostrar cuantas drivers hay" 
+-- SELECT count(*) as Número_de_drivers FROM ddbb.drivers;
 
-\echo "Mostrar las drivers en país específico" 
-SELECT * FROM ddbb.drivers WHERE nationality='Spanish';
+-- \echo "Mostrar las drivers en país específico" 
+-- SELECT * FROM ddbb.drivers WHERE nationality='Spanish';
 
-\echo "Mostrar cuantas lap_times hay" 
-SELECT count(*) as Número_de_lap_times FROM ddbb.lap_times;
+-- \echo "Mostrar cuantas lap_times hay" 
+-- SELECT count(*) as Número_de_lap_times FROM ddbb.lap_times;
 
-\echo "Mostrar las lap_times de un driver específico" 
-SELECT * FROM ddbb.lap_times WHERE driverId='1';
+-- \echo "Mostrar las lap_times de un driver específico" 
+-- SELECT * FROM ddbb.lap_times WHERE driverId='1';
 
-\echo "Mostrar cuantas pit_stops hay" 
-SELECT count(*) as Número_de_pit_stops FROM ddbb.pit_stops;
+-- \echo "Mostrar cuantas pit_stops hay" 
+-- SELECT count(*) as Número_de_pit_stops FROM ddbb.pit_stops;
 
-\echo "Mostrar las pit_stops de un driver específico" 
-SELECT * FROM ddbb.pit_stops WHERE driverId='1';
+-- \echo "Mostrar las pit_stops de un driver específico" 
+-- SELECT * FROM ddbb.pit_stops WHERE driverId='1';
 
-\echo "Mostrar cuantas qualifying hay" 
-SELECT count(*) as Número_de_qualifying FROM ddbb.qualifying;
+-- \echo "Mostrar cuantas qualifying hay" 
+-- SELECT count(*) as Número_de_qualifying FROM ddbb.qualifying;
 
-\echo "Mostrar las qualifying de un driver específico" 
-SELECT * FROM ddbb.qualifying WHERE driverId='1';
+-- \echo "Mostrar las qualifying de un driver específico" 
+-- SELECT * FROM ddbb.qualifying WHERE driverId='1';
 
-\echo "Mostrar cuantas races hay" 
-SELECT count(*) as Número_de_races FROM ddbb.races;
+-- \echo "Mostrar cuantas races hay" 
+-- SELECT count(*) as Número_de_races FROM ddbb.races;
 
-\echo "Mostrar las races de un año específico" 
-SELECT * FROM ddbb.races WHERE year='2009';
+-- \echo "Mostrar las races de un año específico" 
+-- SELECT * FROM ddbb.races WHERE year='2009';
 
-\echo "Mostrar cuantas results hay" 
-SELECT count(*) as Número_de_results FROM ddbb.results;
+-- \echo "Mostrar cuantas results hay" 
+-- SELECT count(*) as Número_de_results FROM ddbb.results;
 
-\echo "Mostrar las results de un piloto específico" 
-SELECT * FROM ddbb.results WHERE pilotoid='1';
+-- \echo "Mostrar las results de un piloto específico" 
+-- SELECT * FROM ddbb.results WHERE pilotoid='1';
 
-\echo "Mostrar cuantas seasons hay" 
-SELECT count(*) as Número_de_seasons FROM ddbb.seasons;
+-- \echo "Mostrar cuantas seasons hay" 
+-- SELECT count(*) as Número_de_seasons FROM ddbb.seasons;
 
-\echo "Mostrar las seasons de un año específico" 
-SELECT * FROM ddbb.seasons WHERE year='2009';
+-- \echo "Mostrar las seasons de un año específico" 
+-- SELECT * FROM ddbb.seasons WHERE year='2009';
 
-\echo "Mostrar cuantas status hay" 
-SELECT count(*) as Número_de_status FROM ddbb.status;
+-- \echo "Mostrar cuantas status hay" 
+-- SELECT count(*) as Número_de_status FROM ddbb.status;
 
-\echo "Mostrar las status 'Finished'" 
-SELECT * FROM ddbb.status WHERE status='Finished';
+-- \echo "Mostrar las status 'Finished'" 
+-- SELECT * FROM ddbb.status WHERE status='Finished';
 
 ROLLBACK;  -- importante! permite correr el script múltiples veces
