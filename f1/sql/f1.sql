@@ -591,7 +591,24 @@ SELECT DISTINCT ON (statusId)
     status
 FROM ddbb.status;
 
-SELECT url, forename FROM pl1final.drivers WHERE driver_ref='hamilton';
+-- CONSULTA 1
+-- SELECT * FROM pl1final.circuits JOIN pl1final.races ON pl1final.circuits.circuit_id = pl1final.races.circuit_id WHERE pl1final.races.name LIKE '%Grand Prix%' ;
+-- SELECT pl1final.circuits.name, count(*) AS totalCarreras 
+-- FROM pl1final.circuits 
+-- JOIN pl1final.races ON pl1final.circuits.circuit_id = pl1final.races.circuit_id 
+-- WHERE pl1final.races.name LIKE '%Grand Prix%'
+-- GROUP BY pl1final.circuits.circuit_id 
+-- ORDER BY totalCarreras DESC;
+
+-- CONSULTA 2 (A MEDIAS)
+SELECT pl1final.drivers.forename, SUM(pl1final.results.points) AS gpSenna 
+FROM pl1final.drivers 
+JOIN pl1final.results ON pl1final.drivers.driver_id = pl1final.results.driver_id 
+WHERE pl1final.drivers.surname = 'Senna' AND pl1final.drivers.forename = 'Ayrton' 
+GROUP BY pl1final.drivers.forename 
+ORDER BY gpSenna DESC;
+
+
 
 
 \echo "Mostrar cuantas circuits hay" 
