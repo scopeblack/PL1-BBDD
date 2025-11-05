@@ -260,7 +260,7 @@ CREATE TABLE IF NOT EXISTS pl1final.qualifying (
 CREATE TABLE IF NOT EXISTS pl1final.lap_times (
     race_id         INTEGER REFERENCES pl1final.races(race_id),
     driver_id       INTEGER REFERENCES pl1final.drivers(driver_id),
-    lap             INTEGER,
+    lap             INTEGER PRIMARY KEY,
     position        INTEGER,
     time            TEXT,
     milliseconds    INTEGER,
@@ -274,7 +274,7 @@ CREATE TABLE IF NOT EXISTS pl1final.pit_stops (
     race_id         INTEGER REFERENCES pl1final.races(race_id),
     driver_id       INTEGER REFERENCES pl1final.drivers(driver_id),
     stop            INTEGER,
-    lap             INTEGER,
+    lap             INTEGER REFERENCES pl1final.lap_times(lap),
     time            TEXT,
     duration        TEXT,
     milliseconds    INTEGER,
