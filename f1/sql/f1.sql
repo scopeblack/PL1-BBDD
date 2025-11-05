@@ -141,14 +141,8 @@ CREATE TABLE IF NOT EXISTS ddbb.status(
 \COPY ddbb.seasons     FROM f1/datos/seasons.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL '\N', ENCODING 'UTF-8');
 \COPY ddbb.status      FROM f1/datos/status.csv WITH (FORMAT csv, HEADER, DELIMITER E',', NULL '\N', ENCODING 'UTF-8');
 
-
 /* ESQUEMA FINAL NUEVO */
 CREATE SCHEMA IF NOT EXISTS pl1final;
-
--- SET search_path TO pl1final; -- Para no tener que usar select * from pl1final.drivers, quedando solo select * from drivers (sin el pl1final).
--- Le dice a postgre que esquema usar por defecto.
-
-
 
 -- ================================================
 -- CIRCUITS
@@ -192,13 +186,21 @@ CREATE TABLE IF NOT EXISTS pl1final.drivers (
 );
 
 -- ================================================
+-- STATUS
+-- ================================================
+CREATE TABLE IF NOT EXISTS pl1final.status (
+    status_id   INTEGER PRIMARY KEY,
+    status      TEXT
+);
+
+-- ================================================
 -- RACES
 -- ================================================
 CREATE TABLE IF NOT EXISTS pl1final.races (
     race_id         INTEGER PRIMARY KEY,
     year            INTEGER,
     round           INTEGER,
-    circuit_id      INTEGER REFERENCES pl1final.circuits(circuit_id),
+    circuit_id      INTEGER,
     name            TEXT,
     date            DATE,
     time            TEXT,
@@ -212,7 +214,10 @@ CREATE TABLE IF NOT EXISTS pl1final.races (
     quali_date      DATE,
     quali_time      TEXT,
     sprint_date     DATE,
-    sprint_time     TEXT
+    sprint_time     TEXT,
+    CONSTRAINT fk_races_circuit
+        FOREIGN KEY (circuit_id)
+        REFERENCES pl1final.circuits(circuit_id)
 );
 
 -- ================================================
@@ -220,9 +225,9 @@ CREATE TABLE IF NOT EXISTS pl1final.races (
 -- ================================================
 CREATE TABLE IF NOT EXISTS pl1final.results (
     result_id              INTEGER PRIMARY KEY,
-    race_id                INTEGER REFERENCES pl1final.races(race_id),
-    driver_id              INTEGER REFERENCES pl1final.drivers(driver_id),
-    constructor_id         INTEGER REFERENCES pl1final.constructors(constructor_id),
+    race_id                INTEGER,
+    driver_id              INTEGER,
+    constructor_id         INTEGER,
     number                 INTEGER,
     grid                   INTEGER,
     position               INTEGER,
@@ -236,7 +241,19 @@ CREATE TABLE IF NOT EXISTS pl1final.results (
     rank                   INTEGER,
     fastest_lap_time       TEXT,
     fastest_lap_speed      REAL,
-    status_id              INTEGER
+    status_id              INTEGER,
+    CONSTRAINT fk_results_race
+        FOREIGN KEY (race_id)
+        REFERENCES pl1final.races(race_id),
+    CONSTRAINT fk_results_driver
+        FOREIGN KEY (driver_id)
+        REFERENCES pl1final.drivers(driver_id),
+    CONSTRAINT fk_results_constructor
+        FOREIGN KEY (constructor_id)
+        REFERENCES pl1final.constructors(constructor_id),
+    CONSTRAINT fk_results_status
+        FOREIGN KEY (status_id)
+        REFERENCES pl1final.status(status_id)
 );
 
 -- ================================================
@@ -244,41 +261,65 @@ CREATE TABLE IF NOT EXISTS pl1final.results (
 -- ================================================
 CREATE TABLE IF NOT EXISTS pl1final.qualifying (
     qualify_id      INTEGER PRIMARY KEY,
-    race_id         INTEGER REFERENCES pl1final.races(race_id),
-    driver_id       INTEGER REFERENCES pl1final.drivers(driver_id),
-    constructor_id  INTEGER REFERENCES pl1final.constructors(constructor_id),
+    race_id         INTEGER,
+    driver_id       INTEGER,
+    constructor_id  INTEGER,
     number          INTEGER,
     position        INTEGER,
     q1              TEXT,
     q2              TEXT,
-    q3              TEXT
+    q3              TEXT,
+    CONSTRAINT fk_qualifying_race
+        FOREIGN KEY (race_id)
+        REFERENCES pl1final.races(race_id),
+    CONSTRAINT fk_qualifying_driver
+        FOREIGN KEY (driver_id)
+        REFERENCES pl1final.drivers(driver_id),
+    CONSTRAINT fk_qualifying_constructor
+        FOREIGN KEY (constructor_id)
+        REFERENCES pl1final.constructors(constructor_id)
 );
 
 -- ================================================
 -- LAP_TIMES
 -- ================================================
 CREATE TABLE IF NOT EXISTS pl1final.lap_times (
-    race_id         INTEGER REFERENCES pl1final.races(race_id),
-    driver_id       INTEGER REFERENCES pl1final.drivers(driver_id),
-    lap             INTEGER PRIMARY KEY,
+    race_id         INTEGER,
+    driver_id       INTEGER,
+    lap             INTEGER,
     position        INTEGER,
     time            TEXT,
     milliseconds    INTEGER,
-    PRIMARY KEY (race_id, driver_id, lap)
+    PRIMARY KEY (race_id, driver_id, lap),
+    CONSTRAINT fk_lap_times_race
+        FOREIGN KEY (race_id)
+        REFERENCES pl1final.races(race_id),
+    CONSTRAINT fk_lap_times_driver
+        FOREIGN KEY (driver_id)
+        REFERENCES pl1final.drivers(driver_id)
 );
 
 -- ================================================
 -- PIT_STOPS
 -- ================================================
 CREATE TABLE IF NOT EXISTS pl1final.pit_stops (
-    race_id         INTEGER REFERENCES pl1final.races(race_id),
-    driver_id       INTEGER REFERENCES pl1final.drivers(driver_id),
+    race_id         INTEGER,
+    driver_id       INTEGER,
     stop            INTEGER,
-    lap             INTEGER REFERENCES pl1final.lap_times(lap),
+    lap             INTEGER,
     time            TEXT,
     duration        TEXT,
     milliseconds    INTEGER,
-    PRIMARY KEY (race_id, driver_id, stop)
+    PRIMARY KEY (race_id, driver_id, stop),
+    CONSTRAINT fk_pit_stops_race
+        FOREIGN KEY (race_id)
+        REFERENCES pl1final.races(race_id),
+    CONSTRAINT fk_pit_stops_driver
+        FOREIGN KEY (driver_id)
+        REFERENCES pl1final.drivers(driver_id),
+    CONSTRAINT fk_pit_stops_lap
+        FOREIGN KEY (race_id, driver_id, lap)
+        REFERENCES pl1final.lap_times(race_id, driver_id, lap)
 );
 
 -- ================================================
@@ -289,13 +330,9 @@ CREATE TABLE IF NOT EXISTS pl1final.seasons (
     url     TEXT
 );
 
--- ================================================
--- STATUS
--- ================================================
-CREATE TABLE IF NOT EXISTS pl1final.status (
-    status_id   INTEGER PRIMARY KEY,
-    status      TEXT
-);
+
+
+
 
 
 \echo 'Cargando la tabla drivers'
@@ -363,6 +400,14 @@ SELECT DISTINCT ON (raceId)
     sprint_date::DATE,
     sprint_time
 FROM ddbb.races;
+
+
+\echo 'Cargando la tabla status'
+INSERT INTO pl1final.status (status_id, status)
+SELECT DISTINCT ON (statusId)
+    statusId::INTEGER,
+    status
+FROM ddbb.status;
 
 
 \echo 'Cargando la tabla results'
@@ -437,12 +482,7 @@ SELECT DISTINCT ON (year)
 FROM ddbb.seasons;
 
 
-\echo 'Cargando la tabla status'
-INSERT INTO pl1final.status (status_id, status)
-SELECT DISTINCT ON (statusId)
-    statusId::INTEGER,
-    status
-FROM ddbb.status;
+
 
 -- CONSULTA 1
 -- SELECT * FROM pl1final.circuits JOIN pl1final.races ON pl1final.circuits.circuit_id = pl1final.races.circuit_id WHERE pl1final.races.name LIKE '%Grand Prix%' ;
